@@ -1,0 +1,378 @@
+%        File: curry-howard.tex
+%     Created: Mon Feb 10 10:00 AM 2020 E
+% Last Change: Mon Feb 10 10:00 AM 2020 E
+%
+\documentclass[a4paper]{article}
+\usepackage{proof}
+\usepackage{amsmath}
+
+\title{Towards Curry-Howard Isomorphism}
+\author{Chuta Sano}
+
+\begin{document}
+\maketitle
+
+\section{Intro}
+\paragraph{Scenario}
+Imagine if aliens invaded (or peacefully communicated with) Earth. It's quite
+intuitive and natural for us to expect our natural languages (eg: English vs
+Alienese) to be incompatible and for them not to understand English. This is
+because we know that English is an arbitrary language and is something man-made.
+
+\paragraph{}
+I suppose we then move to other languages, like math. We believe that math is
+universal and thus, although our notations for $\pi$ might not be the same nor
+our representation of numbers, we will still be able to know that we ``speak the
+same language.'' Again, this falls back to the recurring idea of ``universal''
+vs ``arbitrary.''
+
+\paragraph{}
+Howabout programming languages? Is C arbitrary? Answer: yes. Is Java? Yes. Is
+Pyth--? Yes. So programming languages are manmade and arbitrary? No.
+
+\paragraph{Claim}
+There are universal programming languages that we can discover by following
+indisputable universal laws or uncontroversial axioms. In particular, studying
+a particular logic gives rise to a natural programming language. In this paper
+we will sketch out the most famous and earliest discovery of such an equivalence
+-- the Curry Howard isomorphism between natural deduction and the famous lambda
+calculus. The following are equivalent; pick and choose the most appealing
+phrase:
+
+\begin{center}
+  Propositions are types \\
+  Proofs are Programs \\ 
+  Logical Systems are Programming Languages \\
+\end{center}
+
+\newpage
+
+\paragraph{}
+One of the key insights that impacted proof theory from a computational
+perspective is the observation that implication, $A \supset B$ (read: $A$
+implies $B$), is not just $\neg A \lor B$, which is the classical
+interpretation, which treats implication as a mere result of negation and
+disjunction.
+
+\paragraph{}
+Instead, say, for entertainment sake, we will interpret implication as an
+independent logical connective, where $A \supset B$ is to be interpreted more
+naturally: ``if I know $A$, then I know $B$.'' This sort of mindset leads us to
+intuitionistic logic, which a proof theorist interested in its computational
+interpretation ought to at least entertain (whether or not you believe in the
+philosophical aspect of intuitionism is another story).
+
+\section{Natural Deduction}
+\paragraph{}
+In proof theory, we study proofs. Whereas in other disciplines, proofs are mere
+tools to say something enrichening, in proof theory, we treat proofs as
+mathematical objects which allow us to rigorously ``prove'' various properties
+of proofs. Natural deduction is one such representation (or a ``model,'' not in
+the technical sense) due to Prawitz.
+
+\subsection{Conjunction}
+\paragraph{}
+We first start with the conjunction (logical and).
+$$\infer[(\land I)]{A \land B}{A & B}$$
+This is read from top to bottom as a premise to conclusion: the rule says that
+from $A$ ``and'' (in a meta sense) $B$, we can conclude $A \land B$. The $(\land
+I)$ is a label and is of no theoretical importance; the $I$ is a shorthand for
+``introduction''. This is an example of a rule of inference, and more
+specifically, an introduction rule since the logical connective $\land$ appears
+in the conclusion.
+
+\paragraph{}
+Next we have the elimination rules for conjunction. Since an introduction rule
+``introduces'' an $\land$ connective to the conclusion, an elimination rule
+``eliminates'' an $\land$ connective from the conclusion. At first, we might be
+tempted to follow a symmetric pattern:
+$$\infer[(\land E_{wrong})]{A \quad B}{A \land B}$$
+However, this is not quite what we want -- natural deduction is intentionally
+formulated to ``shrink'' down, and so instead, we construct two elimination
+rules:
+
+\[
+  \infer[(\land E_1)]{A}{A \land B} \quad
+  \infer[(\land E_2)]{B}{A \land B}
+\]
+
+There might be a concern that we are losing information, but implicitly, since
+we know that if we can prove $A \land B$ once, we can prove it again in the
+boring fashion (by copy pasting), we can always recover both $A$ and $B$ by
+applying $(\land E_1)$ and $(\land E_2)$ respectively to two copies of $A \land
+B$, so no information is lost.\footnote{This notion of ``not losing information'' is
+called completeness, and indeed there are rigorous ways to verify that the
+seemingly arbitrary introduction and elimination rules are correct in that
+sense.}
+
+\paragraph{}
+So far, we have defined the meaning of a conjunction through the introduction
+and elimination rules. As an example of a typical proof in natural deduction, we
+will prove the meta theorem that conjunction is associative. That is, we want to
+show that from the hypothesis $(A \land B) \land C$, we can conclude $A \land (B
+\land C)$ and vice versa. Put concisely, we want to show:
+$$(A \land B) \land C \Leftrightarrow A \land (B \land C)$$
+
+$$
+\infer[(\land I)]{A \land (B \land C)}{
+  \infer[(\land E_1)]{A}{
+    \infer[(\land E_1)]{A \land B}{(A \land B) \land C}
+  } &
+  \infer[(\land I)]{B \land C}{
+    \infer[(\land E_2)]{B}{
+      \infer[(\land E_1)]{A \land B}{(A \land B) \land C}
+  } &
+    \infer[(\land E_2)]{C}{(A \land B) \land C)}
+  }
+}
+$$
+
+The opposite direction follows a similar structure (can be an exercise).
+
+\subsection{Implication}
+\paragraph{}
+Adding implication requires an additional construct in our formulation.
+$$\infer[(\supset I)]{A \supset B}{\infer*{B}{[A]}}$$
+The premise $\infer*{B}{[A]}$ is called a hypothetical judgement, hypothetical
+derivation, or a hypothetical proof. The $[A]$ is a local hypothesis and hence
+bound to the hypothetical derivation only -- in particular, this enforces the
+intuitive idea that we cannot use $A$ outside of the hypothetical proof.
+
+\paragraph{}
+Interestingly, modus ponens appears as a natural elimination rule to the
+implication we defined:
+$$\infer[(\supset E)]{B}{A \supset B & A}$$
+
+\paragraph{}
+At first, we may question the utility of this connective in natural deduction.
+Afterall, what's wrong with ignoring $A \supset B$ and instead working directly
+with the hypothetical proof? It is indeed true that from a pure ``proof''
+perspective, a hypothetical judgement is identical to an implication, and
+structurally, using the hypothetical judgement makes more sense, though may not
+be economical space-wise. However, do not forget that proof theory is the study
+of proofs; this seemingly redundant encoding allows us to look beyond
+mere provability since we can now reference proofs at a meta-level (using
+hypothetical judgements) and inside the language (using implication).
+
+\subsubsection{Exercise}
+Prove the fragment of logic we have introduced so far is ``cartesian closed.''
+\footnote{jargon anticipating the connection between logic and category theory}
+That is, prove:
+$$(A \land B) \supset C \Leftrightarrow A \supset (B \supset C)$$
+(implicit parenthesis added for clarity sake)
+
+\subsection{Disjunction}
+\paragraph{}
+Initially, disjunction seems like a dual to conjunction:
+\[
+  \infer[(\lor I_1)]{A \lor B}{A} \quad
+  \infer[(\lor I_2)]{A \lor B}{B}
+\]
+
+However, its elimination rule is a bit complicated:
+
+$$\infer[(\lor E)]{C}{A \lor B & \infer*{C}{[A]} & \infer*{C}{[B]}}$$
+
+This says that to eliminate an instance of an $A \lor B$, we require a motive
+$C$ such that from $A$ we can prove $C$ and from $B$ we can prove $C$. This is
+essentially a case analysis, which of course is how we intuitively handle
+statements like ``$A$ or $B$.''
+
+\subsubsection{Exercise}
+Prove that disjunction and conjunction distributes. That is, prove:
+$$(A \lor B) \land C \Leftrightarrow (A \land C) \lor (B \land C)$$
+and
+$$(A \land B) \lor C \Leftrightarrow (A \lor C) \land (B \lor C)$$
+
+\subsection{Sequent}
+\paragraph{}
+For economic reasons, we will formulate the two dimensional hypothetical
+judgements as one dimensional sequents. A sequent $A,B,C,\cdots \vdash D$
+consists of a context, a list of antecedents or hypothesis $(A,B,C,\cdots)$, often
+abbreviated $\Gamma$, followed by a single conclusion $(D)$.\footnote{An
+  intuitionistic interpretation\ldots classical sequents allow a list of
+conclusions (interpretted as disjunctions).}
+
+\paragraph{}
+For example, recall the introduction rule for implication:
+$$\infer[(\supset I)]{A \supset B}{\infer*{B}{[A]}}$$
+and rewrite it as follows:
+$$\infer[(\supset I)]{\cdot \vdash A \supset B}{A \vdash B}$$
+where $\cdot$ is meant to represent an ``empty hypothesis.'' The notion that the
+assumption $A$ cannot be used outside the single premise is captured by removing
+$A$ from the antecedent in its conclusion.
+
+\paragraph{}
+However, this is not quite general enough; in particular, we've ignored the
+fact that there can be other hypotheses floating about! That is, since the
+conclusion requires an empty hypothesis, we are no longer able to apply this
+rule of implication introduction under other hypotheses. Thus, the correct form
+of implication introduction should allow arbitrary hypothesis (contexts):
+$$\infer[(\supset I)]{\Gamma \vdash A \supset B}{\Gamma, A \vdash B}$$
+
+Again, it's important to note here that $A$ still ``disappears'' in the
+conclusion as expected.
+
+\paragraph{}
+This one dimensional presentation of hypothetical judgements might further
+provoke some dissonance and objections to the role of implication -- really,
+what is the difference between $A \vdash B$ and $A \supset B$? From a
+syntactical point of view, the difference is clear; $A \vdash B$ is not a
+proposition and $A \supset B$ is a proposition. However, this might not be too
+satisfying, since afterall, this distinction is something we artificially
+created. The reason for this seemingly duplicate work is again because proof
+theory is a ``proof-relevant'' theory. We don't only care about something being
+true or not or being provable or not -- there is value in looking at an
+``implication'' (in an informal sense) from the meta perspective
+(sequents/hypothetical judgements) and from the language perspective
+$(\supset)$.
+
+\subsubsection{Exercise}
+\paragraph{}
+Rewrite all (or an arbitrary selection) of the rules of inference keeping in
+mind the ``arbitrary context'' rule. For the most part, it's as simple as adding
+$\Gamma \vdash$ in front of everything. The only tricky part is the elimination
+rule for disjunction, where its hypothetical judgements should be rewritten in a
+similar manner to the one in implication introduction.
+
+\paragraph{}
+Assuming you did above for at least conjunction introduction (if not, please do
+it), try to intuitively convince yourself that what you wrote is general enough
+to capture this version of conjunction introduction:
+$$\infer{\Gamma_1, \Gamma_2 \vdash A \land B}{\Gamma_1 \vdash A & \Gamma_2
+\vdash B}$$ (hint, let your $\Gamma := \Gamma_1, \Gamma_2$ and fill in the
+gaps). The filling in of these ``gaps'' is called weakening.
+
+
+
+\subsection{Proof Terms}
+Are the excercises frustrating enough? So far we have only introduced
+metavariables for arbitrary propositions $(A, B, C)$ but have not introduced
+metavariables (or any structural way of reasoning) about proof terms.
+
+$$M : A \qquad M \text{ is a proof of proposition } A$$
+
+Similarly, the context now consists of not just propositions but the proof terms
+associated with each proposition. Therefore, a typical sequent looks like:
+
+$$x:A, y:B, \cdots \vdash M : A$$
+where $\Gamma$ is still used as a metavariable for the hypotheses.
+
+\paragraph{}
+This change of course means that we have to reformulate all of our inference
+rules.
+
+\subsubsection{Conjunction}
+Given a proof of $A$ and a proof of $B$, what constitutes a proof of $A \land
+B$? Well, we can form a pair of proofs.
+
+$$\infer[(\land I)]{\Gamma \vdash \langle M,N \rangle : A \land B}{\Gamma \vdash M: A & N : B}$$
+
+On the other hand, if we have an arbitrary proof of $A \land B$, how can we
+extract a proof of $A$ and a proof of $B$? Since the proof of $A \land B$ is
+arbitrary, we cannot assume its form. Instead, we require two projection
+operators $\pi_1$ and $\pi_2$:
+
+\[
+  \infer[(\land E_1)]{\Gamma \vdash \pi_1 M : A}{\Gamma \vdash M : A \land B} \quad
+  \infer[(\land E_2)]{\Gamma \vdash \pi_2 M : B}{\Gamma \vdash M : A \land B}
+\]
+
+\paragraph{$\eta$ expansion}
+Note that for any proof term $M : A \land B$, we have
+$$M =_{\eta} \langle \pi_1 M, \pi_2 M \rangle$$
+
+The right hand side is called the $\eta$ expansion of $M$. This essentially says
+that if we know that $M$ is a proof of $A \land B$, we can create an equivalent
+proof by constructing a pair of its first and second projections respectively.
+This is also known as ``extensional'' equality, as opposed to structural or
+intensional equality, where the idea is that we are asserting that they ought to
+be equal because they are observationally equivalent. This is a formal version
+of the whole duck principle: if it quacks like a duck, looks like a duck,
+\ldots, then it's a duck.
+
+\paragraph{$\beta$ reduction}
+On the other hand, for a proof term $\langle M, N \rangle : A \land B$, we can talk about what
+happens to the proof term under $\pi_1$ and $\pi_2$.
+
+\begin{gather*}
+  \pi_1 \langle M, N \rangle =_{\beta} M \\
+  \pi_2 \langle M, N \rangle =_{\beta} N
+\end{gather*}
+
+This foreshadows the computational interpretation of natural deduction (of
+intuitionistic logic); a $\beta$ reduction of a proof corresponds to a single
+``computational step.''
+
+\paragraph{Associativity Proof}
+Recall the lengthy and pedantic proof that $(A \land B) \land C \vdash A \land
+(B \land C)$. By introducing the syntactical notion of proof terms, we can now
+construct a witness that proves the above sequent:
+
+$$x : (A \land B) \land C \vdash \langle \pi_1 \pi_1 x, \langle \pi_2 \pi_1 x,
+\pi_2 x \rangle \rangle : A \land (B \land C)$$
+
+
+\subsubsection{Implication}
+\paragraph{}
+Implication is the most important logical step that gives us a satisfying
+computational interpretation.  Given a hypothetical judgement $M : B$ under
+hypothesis $x : A$, we can create a lambda term (or an anonymous function)
+$\lambda x:A. M : A \supset B$. It turns out that specifying the type of $x$ is
+unnecessary (nevertheless still useful as an annotation), so leaving out the
+type annotation, here is the introduction rule:
+
+$$\infer[(\supset I)]{\Gamma \vdash \lambda x.M : A \supset B}{\Gamma, x:A
+\vdash M : B}$$
+
+The proof theoretic interpretation is still the same: give me a proof of $A$,
+which we will call $x$, and using that, I will prove $B$. However, the
+computational interpretation is that of a function: give me some $x : A$ and
+I'll give you some well-formed $M : B$.
+
+\paragraph{}
+The elimination rule simply puts two proof terms side by side.
+
+$$\infer[(\supset E)]{\Gamma \vdash M\,N : B}{\Gamma \vdash M : A \supset B &
+\Gamma \vdash N : A}$$
+
+It may be more suggestive to write $M(N)$ to emphasize that $N$ is applied to
+$M$. The computational interpretation is a function application, where $N$ is to
+be interpreted as an argument to $M$.
+
+\paragraph{}
+For some $M  : A \supset B$, we can conclude
+$$M =_{\eta} \lambda x. M x$$
+
+On the other hand for some $M$ and $N$, we have
+$$(\lambda x. M) N =_{\beta} [N/x]M$$
+where the right hand side is read: ``replace all instances of $x$ in $M$ with
+$N$.''
+
+\subsubsection{Disjunction}
+\paragraph{}
+Whereas conjunction had a notion of projection operators that extracted either
+the first or the second term in a pair of proofs, disjunction requires a notion
+of injection operators that injects a proof into a disjunction of two proofs:
+
+\[
+  \infer[(\lor I_1)]{\Gamma \vdash \iota_1 M : A \lor B}{\Gamma \vdash M : A} \quad
+  \infer[(\lor I_2)]{\Gamma \vdash \iota_2 M : A \lor B}{\Gamma \vdash M : B}
+\]
+
+\paragraph{}
+The elimination rule as we had previously discussed is a case analysis:
+$$\infer[(\lor E)]{\Gamma \vdash \text{case}(M; x.P; y.Q) : C}{\Gamma \vdash M : A
+\lor B & \Gamma, x : A \vdash P : C & \Gamma, y : B \vdash Q : C}$$
+
+\paragraph{}
+The $x.$ and $y.$ at front emphasizes that $P$ and $Q$ depend on $x$ and $y$
+respectively.
+
+\paragraph{}
+For some $M  : A \supset B$, we can conclude
+$$M =_{\eta} \lambda x. M x$$
+
+\end{document}
+
+
