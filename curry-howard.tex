@@ -27,15 +27,15 @@ same language.'' Again, this falls back to the recurring idea of ``universal''
 vs ``arbitrary.''
 
 \paragraph{}
-Howabout programming languages? Is C arbitrary? Answer: yes. Is Java? Yes. Is
+How about programming languages? Is C arbitrary? Answer: yes. Is Java? Yes. Is
 Pyth--? Yes. So programming languages are manmade and arbitrary? No.
 
 \paragraph{Claim}
 There are universal programming languages that we can discover by following
 indisputable universal laws or uncontroversial axioms. In particular, studying
-a particular logic gives rise to a natural programming language. In this paper
-we will sketch out the most famous and earliest discovery of such an equivalence
--- the Curry Howard isomorphism between natural deduction and the famous lambda
+a particular logic gives rise to a programming language. In this paper we will
+sketch out the most famous and earliest discovery of such an equivalence -- the
+Curry-Howard isomorphism between natural deduction and the simply typed lambda
 calculus. The following are equivalent; pick and choose the most appealing
 phrase:
 
@@ -50,17 +50,21 @@ phrase:
 \paragraph{}
 One of the key insights that impacted proof theory from a computational
 perspective is the observation that implication, $A \supset B$ (read: $A$
-implies $B$), is not just $\neg A \lor B$, which is the classical
-interpretation, which treats implication as a mere result of negation and
+implies $B$), is not just $\neg A \lor B$\footnote{the classical
+interpretation}, which treats implication as a mere result of negation and
 disjunction.
 
 \paragraph{}
-Instead, say, for entertainment sake, we will interpret implication as an
-independent logical connective, where $A \supset B$ is to be interpreted more
-naturally: ``if I know $A$, then I know $B$.'' This sort of mindset leads us to
-intuitionistic logic, which a proof theorist interested in its computational
-interpretation ought to at least entertain (whether or not you believe in the
-philosophical aspect of intuitionism is another story).
+Instead, if we interpret implication as an independent logical connective,
+where $A \supset B$ is to be interpreted more naturally: ``if I know $A$, then
+I know $B$,'' we obtain a richer presentation of logic, allowing us to observe
+the correspondence of logic and computation. In the following presentation, we
+will seemingly ``forget'' past results in classical logic that allows us to
+present all connectives in terms of $\neg$ and $\land$ (or alternatively, a
+``nand'' connective): conjunction, disjunction, and implication are all
+independent connectives that cannot be formulated in terms of the other.
+However, we will eventually see that we are following an alternate logical
+system: \textit{intuitionistic logic}.
 
 \section{Natural Deduction}
 \paragraph{}
