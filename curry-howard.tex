@@ -368,14 +368,46 @@ of injection operators that injects a proof into a disjunction of two proofs:
 The elimination rule as we had previously discussed is a case analysis:
 $$\infer[(\lor E)]{\Gamma \vdash \text{case}(M; x.P; y.Q) : C}{\Gamma \vdash M : A
 \lor B & \Gamma, x : A \vdash P : C & \Gamma, y : B \vdash Q : C}$$
-
-\paragraph{}
 The $x.$ and $y.$ at front emphasizes that $P$ and $Q$ depend on $x$ and $y$
 respectively.
 
 \paragraph{}
-For some $M  : A \supset B$, we can conclude
-$$M =_{\eta} \lambda x. M x$$
+Again, we have our $\eta$ expansion:
+$$M =_{\eta} \text{case}(M; x. \iota_1 x; y. \iota_2 y)$$
+
+And two $\beta$ reductions:
+
+\begin{gather*}
+  \text{case}(\iota_1 M; x. P; y. Q) =_{\beta} [M/x]P \\
+  \text{case}(\iota_2 M; x. P; y. Q) =_{\beta} [M/y]Q
+\end{gather*}
+
+\subsubsection{Exercises}
+\paragraph{Isomorphism}
+Write two proof terms
+\begin{gather*}
+  f : ((A \land B) \supset C) \supset (A \supset (B \supset C)) \\
+  g : (A \supset (B \supset C)) \supset ((A \land B) \supset C)
+\end{gather*}
+
+Verify the following equalities:
+\begin{gather*}
+  f \circ g = \lambda x:(A \supset (B \supset C)). x \\
+  g \circ f = \lambda x:(A \land B) \supset C). x
+\end{gather*}
+(hint, use a creative combination of $\beta$ and $\eta$ equalities)
+
+We say that two propositions $A, B$ are isomorphic if the composition of the
+proof terms $f : A \supset B$ and $g: B \supset A$ are equivalent to the
+respective identity proof terms $\lambda x. x$.
+
+\paragraph{Not Isomorphism}
+Here's an example of two propositions not being isomorphic even though they are
+mutually derivable: $A \Leftrightarrow A \lor A$. Confirm it by writing two
+proof terms $f, g$ and composing them. Note, you have two unique (up to
+equivalence) choices for the proof term $A \supset A \lor A$; both of them will fail
+the requirement, so feel free to choose whichever.
+
 
 \end{document}
 
